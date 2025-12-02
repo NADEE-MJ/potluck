@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app import crud
-from app.schemas import CategoryCreate, ItemCreate, CategoryUpdate, ItemUpdate
+from app.schemas import CategoryCreate, ItemCreate, CategoryUpdate, ItemUpdate, ClaimUpdate
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -221,7 +221,7 @@ async def add_item(
     item_name: str = Form(...),
     item_description: str = Form(""),
     claim_limit: int = Form(1),
-    require_details: bool = Form(False),
+    require_details: str = Form(None),
     db: Session = Depends(get_db),
     _: None = Depends(require_admin),
 ):
@@ -230,11 +230,14 @@ async def add_item(
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    # Convert checkbox value to boolean (unchecked checkboxes don't send a value)
+    require_details_bool = require_details == "true" if require_details else False
+
     item_data = ItemCreate(
         name=item_name,
         description=item_description,
         claim_limit=claim_limit,
-        require_details=require_details,
+        require_details=require_details_bool,
     )
     crud.create_item(db, category, item_data, created_by_admin=True)
 
@@ -248,7 +251,7 @@ async def update_item(
     item_name: str = Form(...),
     item_description: str = Form(""),
     claim_limit: int = Form(...),
-    require_details: bool = Form(False),
+    require_details: str = Form(None),
     db: Session = Depends(get_db),
     _: None = Depends(require_admin),
 ):
@@ -257,11 +260,14 @@ async def update_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
+    # Convert checkbox value to boolean (unchecked checkboxes don't send a value)
+    require_details_bool = require_details == "true" if require_details else False
+
     item_data = ItemUpdate(
         name=item_name,
         description=item_description,
         claim_limit=claim_limit,
-        require_details=require_details,
+        require_details=require_details_bool,
     )
     crud.update_item(db, item, item_data)
 
@@ -285,7 +291,27 @@ async def delete_item(
     return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
 
 
-# Claim Management (Admin can delete any claim)
+# Claim Management (Admin can edit and delete any claim)
+@router.post("/edit/{url_slug}/claim/{claim_id}/update")
+async def update_claim_admin(
+    url_slug: str,
+    claim_id: int,
+    attendee_name: str = Form(...),
+    item_details: str = Form(""),
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Update a claim (admin only)."""
+    claim = crud.get_claim(db, claim_id)
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    claim_data = ClaimUpdate(attendee_name=attendee_name, item_details=item_details)
+    crud.update_claim(db, claim, claim_data)
+
+    return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
+
+
 @router.post("/edit/{url_slug}/claim/{claim_id}/delete")
 async def delete_claim_admin(
     url_slug: str,

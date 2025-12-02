@@ -3,27 +3,37 @@
 {% block title %}Create Potluck - Admin{% endblock %}
 
 {% block content %}
-<article>
-    <header>
-        <h1>Create New Potluck</h1>
-    </header>
+<div class="flex justify-between items-center mb-lg">
+    <div>
+        <h1 class="mt-0 mb-0">Create New Potluck</h1>
+        <p class="text-muted mt-sm mb-0">Set up a new potluck event</p>
+    </div>
+    <a href="/admin/dashboard" role="button" class="secondary">
+        <i data-lucide="arrow-left"></i> Back
+    </a>
+</div>
 
+<div class="card">
     <form action="/admin/create" method="post">
         <label for="potluck_name">
             Potluck Name
-            <input type="text" id="potluck_name" name="potluck_name" placeholder="e.g., Summer BBQ 2024" required>
+            <input type="text" id="potluck_name" name="potluck_name" placeholder="e.g., Summer BBQ 2024, Holiday Party" required>
         </label>
 
         <label for="potluck_description">
-            Description (optional)
+            Description <span class="text-muted">(optional)</span>
             <textarea id="potluck_description" name="potluck_description" placeholder="Describe your potluck event..." rows="4"></textarea>
+            <small>Help attendees understand what the event is about</small>
         </label>
 
-        <button type="submit">Create Potluck</button>
+        <button type="submit" style="width: 100%;">
+            <i data-lucide="plus-circle"></i> Create Potluck
+        </button>
     </form>
 
-    <p>
-        <small>After creating the potluck, you'll be able to add categories and items.</small>
+    <p class="text-muted mt-md mb-0" style="text-align: center; font-size: 0.9rem;">
+        <i data-lucide="info" style="width: 14px; height: 14px; vertical-align: middle;"></i>
+        After creating, you'll be able to add categories and items
     </p>
-</article>
+</div>
 {% endblock %}

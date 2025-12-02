@@ -97,9 +97,10 @@ async def claim_item(
 async def delete_claim_public(
     url_slug: str,
     claim_id: int,
+    verify_name: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    """Remove a claim (public)."""
+    """Remove a claim (public) - requires name verification."""
     # Verify potluck exists
     potluck = crud.get_potluck_by_slug(db, url_slug)
     if not potluck:
@@ -109,6 +110,13 @@ async def delete_claim_public(
     claim = crud.get_claim(db, claim_id)
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
+
+    # Verify the name matches (case-insensitive)
+    if claim.attendee_name.strip().lower() != verify_name.strip().lower():
+        raise HTTPException(
+            status_code=403,
+            detail="Name doesn't match. You can only remove your own claims."
+        )
 
     # Delete claim
     crud.delete_claim(db, claim)

@@ -64,6 +64,13 @@ class ClaimCreate(BaseModel):
     item_details: Optional[str] = Field(None, max_length=500)
 
 
+class ClaimUpdate(BaseModel):
+    """Schema for updating a claim."""
+
+    attendee_name: Optional[str] = Field(None, min_length=1, max_length=200)
+    item_details: Optional[str] = Field(None, max_length=500)
+
+
 # Admin Login Schema
 class AdminLogin(BaseModel):
     """Schema for admin login."""

@@ -3,99 +3,169 @@
 {% block title %}{{ potluck.name }}{% endblock %}
 
 {% block content %}
-<article>
-    <header>
-        <h1>{{ potluck.name }}</h1>
-        {% if potluck.description %}
-        <p>{{ potluck.description }}</p>
-        {% endif %}
-    </header>
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h1 class="card-title mt-0">{{ potluck.name }}</h1>
+            {% if potluck.description %}
+            <p class="card-description">{{ potluck.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-    {% if categories_data %}
-        {% for cat_data in categories_data %}
-        <article>
-            <header>
-                <h2>
+{% if categories_data %}
+    {% for cat_data in categories_data %}
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">
+                    <i data-lucide="folder" style="width: 20px; height: 20px; vertical-align: middle;"></i>
                     {{ cat_data.category.name }}
-                    <span style="font-size: 0.9rem; color: #888;">
-                        ({{ cat_data.item_count }}/{{ cat_data.category.max_items }} items)
-                    </span>
                 </h2>
                 {% if cat_data.category.description %}
-                <p>{{ cat_data.category.description }}</p>
+                <p class="card-description">{{ cat_data.category.description }}</p>
                 {% endif %}
-            </header>
+                <div class="badge mt-sm">
+                    <i data-lucide="package"></i>
+                    {{ cat_data.item_count }}/{{ cat_data.category.max_items }} items
+                </div>
+            </div>
+        </div>
 
-            <!-- Items in this category -->
+        <div class="card-body">
             {% if cat_data.items_list %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Who's Bringing It</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item_data in cat_data.items_list %}
-                    <tr>
-                        <td>
-                            <strong>{{ item_data.item.name }}</strong>
-                            {% if item_data.item.description %}<br><small>{{ item_data.item.description }}</small>{% endif %}
-                            <br><small style="color: {% if item_data.can_claim %}green{% else %}red{% endif %};">
+                {% for item_data in cat_data.items_list %}
+                <div class="card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <!-- Item Header -->
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 600;">
+                            {{ item_data.item.name }}
+                        </h3>
+                        {% if item_data.item.description %}
+                        <p class="text-muted" style="margin: 0; font-size: 0.9rem;">
+                            {{ item_data.item.description }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span class="progress-text">
+                                <i data-lucide="users" style="width: 16px; height: 16px; vertical-align: middle;"></i>
                                 {{ item_data.claim_count }}/{{ item_data.item.claim_limit }} claimed
-                            </small>
-                        </td>
-                        <td>
-                            {% if item_data.claims %}
-                            <ul style="margin: 0; padding-left: 1rem;">
-                                {% for claim in item_data.claims %}
-                                <li>
-                                    {{ claim.attendee_name }}
-                                    {% if claim.item_details %} - <em>{{ claim.item_details }}</em>{% endif %}
-                                    <form action="/p/{{ url_slug }}/claim/{{ claim.id }}/delete" method="post" style="display: inline;" onsubmit="return confirm('Remove your claim?');">
-                                        <button type="submit" style="padding: 0.1rem 0.3rem; font-size: 0.7rem;" class="secondary">Remove</button>
-                                    </form>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            {% else %}
-                            <em style="color: #888;">No one yet</em>
-                            {% endif %}
-                        </td>
-                        <td>
+                            </span>
                             {% if item_data.can_claim %}
-                            <details>
-                                <summary>Claim</summary>
-                                <form action="/p/{{ url_slug }}/claim/{{ item_data.item.id }}" method="post">
-                                    <label for="attendee_name_{{ item_data.item.id }}">
-                                        Your Name
-                                        <input type="text" id="attendee_name_{{ item_data.item.id }}" name="attendee_name" placeholder="Enter your name" required>
-                                    </label>
-
-                                    <label for="item_details_{{ item_data.item.id }}">
-                                        Details {% if item_data.item.require_details %}(required){% else %}(optional){% endif %}
-                                        <input type="text" id="item_details_{{ item_data.item.id }}" name="item_details" placeholder="e.g., BBQ flavor" {% if item_data.item.require_details %}required{% endif %}>
-                                    </label>
-
-                                    <button type="submit">Claim Item</button>
-                                </form>
-                            </details>
+                            <span class="badge badge-success">
+                                <i data-lucide="check-circle"></i> Available
+                            </span>
                             {% else %}
-                            <small style="color: red;">Fully Claimed</small>
+                            <span class="badge badge-error">
+                                <i data-lucide="x-circle"></i> Full
+                            </span>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                        <div class="progress-bar">
+                            {% set percentage = (item_data.claim_count / item_data.item.claim_limit * 100) %}
+                            {% if percentage >= 100 %}
+                                {% set progress_class = "full" %}
+                            {% elif percentage >= 75 %}
+                                {% set progress_class = "warning" %}
+                            {% else %}
+                                {% set progress_class = "" %}
+                            {% endif %}
+                            <div class="progress-fill {{ progress_class }}" style="width: {{ percentage }}%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Claims List -->
+                    {% if item_data.claims %}
+                    <div style="margin-top: 1rem;">
+                        <strong style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7);">
+                            <i data-lucide="user-check" style="width: 14px; height: 14px; vertical-align: middle;"></i>
+                            Who's bringing it:
+                        </strong>
+                        <ul class="list-clean" style="margin-top: 0.5rem;">
+                            {% for claim in item_data.claims %}
+                            <li class="list-item" style="flex-direction: column; align-items: flex-start;">
+                                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>{{ claim.attendee_name }}</strong>
+                                        {% if claim.item_details %}
+                                        <br><small class="text-muted">{{ claim.item_details }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="secondary btn-sm" onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <i data-lucide="x"></i>
+                                    </button>
+                                </div>
+                                <div style="display: none; width: 100%; margin-top: 0.5rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-sm);">
+                                    <form action="/p/{{ url_slug }}/claim/{{ claim.id }}/delete" method="post">
+                                        <label for="verify_name_{{ claim.id }}" style="margin-bottom: 0.5rem;">
+                                            <strong style="font-size: 0.9rem;">Verify your name to remove:</strong>
+                                            <input type="text" id="verify_name_{{ claim.id }}" name="verify_name" placeholder="Enter your name" required style="margin-top: 0.25rem;">
+                                            <small style="color: rgba(255, 255, 255, 0.6);">Enter the exact name you used when claiming</small>
+                                        </label>
+                                        <div class="btn-group" style="margin-top: 0.5rem;">
+                                            <button type="submit" class="contrast btn-sm">
+                                                <i data-lucide="trash-2"></i> Confirm Remove
+                                            </button>
+                                            <button type="button" class="secondary btn-sm" onclick="this.closest('div').parentElement.style.display='none'; this.closest('div').parentElement.previousElementSibling.querySelector('button').style.display='inline-flex';">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Claim Form -->
+                    {% if item_data.can_claim %}
+                    <details style="margin-top: 1rem;">
+                        <summary>
+                            <i data-lucide="plus-circle" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                            <strong>Claim this item</strong>
+                        </summary>
+                        <form action="/p/{{ url_slug }}/claim/{{ item_data.item.id }}" method="post" style="margin-top: 1rem;">
+                            <label for="attendee_name_{{ item_data.item.id }}">
+                                Your Name
+                                <input type="text" id="attendee_name_{{ item_data.item.id }}" name="attendee_name" placeholder="Enter your name" required>
+                            </label>
+
+                            <label for="item_details_{{ item_data.item.id }}">
+                                Details {% if item_data.item.require_details %}<span style="color: var(--error);">(required)</span>{% else %}<span class="text-muted">(optional)</span>{% endif %}
+                                <input type="text" id="item_details_{{ item_data.item.id }}" name="item_details" placeholder="e.g., BBQ flavor, gluten-free, etc." {% if item_data.item.require_details %}required{% endif %}>
+                                {% if item_data.item.require_details %}
+                                <small>Please specify what you're bringing</small>
+                                {% endif %}
+                            </label>
+
+                            <button type="submit" style="width: 100%;">
+                                <i data-lucide="check"></i> Claim Item
+                            </button>
+                        </form>
+                    </details>
+                    {% endif %}
+                </div>
+                {% endfor %}
             {% else %}
-            <p><em>No items in this category yet.</em></p>
+                <div class="text-center" style="padding: 2rem;">
+                    <i data-lucide="inbox" style="width: 32px; height: 32px; margin: 0 auto 1rem; opacity: 0.5;"></i>
+                    <p class="text-muted">No items in this category yet</p>
+                </div>
             {% endif %}
-        </article>
-        {% endfor %}
-    {% else %}
-        <p><em>No categories yet. The admin will add them soon!</em></p>
-    {% endif %}
-</article>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card text-center">
+        <i data-lucide="clock" style="width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5;"></i>
+        <h3>No categories yet</h3>
+        <p class="text-muted">The admin will add items soon!</p>
+    </div>
+{% endif %}
 {% endblock %}

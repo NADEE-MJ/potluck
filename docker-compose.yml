@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  potluck:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: potluck-organizer
+    ports:
+      - "8000:8000"
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-this}
+      - DATABASE_URL=sqlite:///./potluck.db
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      # Mount SQLite database file to persist data
+      - ./potluck.db:/app/potluck.db
+      # Optionally mount static files if you want to modify them without rebuilding
+      - ./app/static:/app/app/static
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python3 -c ''import socket; s=socket.socket(); s.connect(("localhost", 8000)); s.close()'' || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

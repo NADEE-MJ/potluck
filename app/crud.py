@@ -12,6 +12,7 @@ from app.schemas import (
     ItemCreate,
     ItemUpdate,
     ClaimCreate,
+    ClaimUpdate,
 )
 
 
@@ -136,6 +137,7 @@ def create_item(
         description=item_data.description,
         claim_limit=item_data.claim_limit,
         created_by_admin=created_by_admin,
+        require_details=item_data.require_details,
     )
     db.add(item)
     db.commit()
@@ -156,6 +158,8 @@ def update_item(db: Session, item: Item, item_data: ItemUpdate) -> Item:
         item.description = item_data.description
     if item_data.claim_limit is not None:
         item.claim_limit = item_data.claim_limit
+    if item_data.require_details is not None:
+        item.require_details = item_data.require_details
     db.commit()
     db.refresh(item)
     return item
@@ -194,6 +198,18 @@ def create_claim(db: Session, item: Item, claim_data: ClaimCreate) -> Claim:
 def get_claim(db: Session, claim_id: int) -> Optional[Claim]:
     """Get a claim by ID."""
     return db.query(Claim).filter(Claim.id == claim_id).first()
+
+
+def update_claim(db: Session, claim: Claim, claim_data: ClaimUpdate) -> Claim:
+    """Update a claim."""
+    if claim_data.attendee_name is not None:
+        claim.attendee_name = claim_data.attendee_name
+    if claim_data.item_details is not None:
+        claim.item_details = claim_data.item_details
+
+    db.commit()
+    db.refresh(claim)
+    return claim
 
 
 def delete_claim(db: Session, claim: Claim) -> None:

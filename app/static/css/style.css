@@ -1,57 +1,552 @@
-/* Custom styles for Potluck Organizer */
+/* ============================================
+   POTLUCK ORGANIZER - CUSTOM STYLES
+   Mobile-first, minimal & clean design
+   ============================================ */
 
-/* Make the shareable link copyable */
-code {
-    user-select: all;
-    cursor: pointer;
+/* ============================================
+   GLOBAL IMPROVEMENTS
+   ============================================ */
+
+:root {
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+
+    --success: #4caf50;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-/* Better spacing for forms in details */
-details form {
-    margin-top: 1rem;
+/* Better container max-width for readability */
+.container {
+    max-width: 1200px;
 }
 
-/* Compact buttons in tables */
-table button {
+/* Improved spacing */
+main.container {
+    padding-top: var(--spacing-lg);
+    padding-bottom: var(--spacing-xl);
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+nav {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-sm) 0;
+}
+
+nav i {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 0.4rem;
+}
+
+nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-lg);
+    border-left: 4px solid;
+}
+
+.alert i {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.alert-error {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-left-color: var(--error);
+    color: #fca5a5;
+}
+
+.alert-success {
+    background-color: rgba(76, 175, 80, 0.15);
+    border-left-color: var(--success);
+    color: #86efac;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-sm);
+}
+
+.card-title {
     margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
-/* Better styling for item lists */
-article ul {
-    list-style-type: none;
-    padding-left: 0;
+.card-description {
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: var(--spacing-xs);
+    font-size: 0.9rem;
 }
 
-article ul li {
-    padding: 0.25rem 0;
+.card-body {
+    margin-top: var(--spacing-md);
 }
 
-/* Make details summary fully clickable */
+.card-footer {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   BADGES & STATS
+   ============================================ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.badge i {
+    width: 14px;
+    height: 14px;
+}
+
+.badge-success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #86efac;
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+}
+
+.badge-error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.stat-item {
+    text-align: center;
+    padding: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+
+.progress-container {
+    margin: var(--spacing-sm) 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), #66bb6a);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.warning {
+    background: linear-gradient(90deg, var(--warning), #ffa726);
+}
+
+.progress-fill.full {
+    background: linear-gradient(90deg, var(--error), #ef5350);
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.progress-text {
+    font-weight: 500;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+button i,
+[role="button"] i {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-group {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.btn-icon-only {
+    padding: 0.5rem;
+    aspect-ratio: 1;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.btn-sm i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Touch-friendly targets for mobile */
+@media (max-width: 768px) {
+    button,
+    [role="button"],
+    a[role="button"] {
+        min-height: 44px;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .btn-sm {
+        min-height: 36px;
+    }
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+label {
+    display: block;
+    margin-bottom: var(--spacing-md);
+}
+
+label small {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+input,
+textarea,
+select {
+    border-radius: var(--border-radius-sm);
+}
+
+/* Better checkbox styling */
+input[type="checkbox"] {
+    margin-right: var(--spacing-xs);
+}
+
+/* ============================================
+   DETAILS/SUMMARY (Collapsible sections)
+   ============================================ */
+
+details {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
 details summary {
     cursor: pointer;
     user-select: none;
-    list-style: none; /* Remove default arrow in some browsers */
+    list-style: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.2s ease;
 }
 
-/* Show custom arrow for better UX */
+details summary:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
 details summary::before {
-    content: '▶ ';
-    display: inline-block;
-    transition: transform 0.2s;
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 6px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
 }
 
 details[open] summary::before {
     transform: rotate(90deg);
 }
 
-/* Danger zone styling */
 details[open] summary {
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
 }
 
-/* Success/Error messages */
-article[aria-label="Error"],
-article[aria-label="Success"] {
-    padding: 1rem;
-    margin-bottom: 1rem;
+details form {
+    margin-top: var(--spacing-md);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+table {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius);
+}
+
+/* Mobile-friendly table - hide on mobile, show cards instead */
+@media (max-width: 768px) {
+    table.responsive-hide {
+        display: none;
+    }
+}
+
+/* ============================================
+   LISTS
+   ============================================ */
+
+.list-clean {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-item {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-0 { margin-top: 0; }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-sm {
+    gap: var(--spacing-sm);
+}
+
+.gap-md {
+    gap: var(--spacing-md);
+}
+
+/* ============================================
+   MOBILE-SPECIFIC CARDS
+   ============================================ */
+
+.mobile-card {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-card {
+        display: block;
+    }
+}
+
+/* ============================================
+   SHAREABLE LINK
+   ============================================ */
+
+code {
+    user-select: all;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+code:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   DANGER ZONE
+   ============================================ */
+
+.danger-zone {
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.danger-zone summary {
+    color: #fca5a5;
+}
+
+/* ============================================
+   GRID LAYOUTS
+   ============================================ */
+
+.grid {
+    display: grid;
+    gap: var(--spacing-sm);
+}
+
+@media (min-width: 768px) {
+    .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+footer {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
