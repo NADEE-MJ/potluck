@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Create Potluck - Admin{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>Create New Potluck</h1>
+    </header>
+
+    <form action="/admin/create" method="post">
+        <label for="potluck_name">
+            Potluck Name
+            <input type="text" id="potluck_name" name="potluck_name" placeholder="e.g., Summer BBQ 2024" required>
+        </label>
+
+        <label for="potluck_description">
+            Description (optional)
+            <textarea id="potluck_description" name="potluck_description" placeholder="Describe your potluck event..." rows="4"></textarea>
+        </label>
+
+        <button type="submit">Create Potluck</button>
+    </form>
+
+    <p>
+        <small>After creating the potluck, you'll be able to add categories and items.</small>
+    </p>
+</article>
+{% endblock %}

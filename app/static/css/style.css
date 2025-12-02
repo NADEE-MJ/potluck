@@ -1,0 +1,57 @@
+/* Custom styles for Potluck Organizer */
+
+/* Make the shareable link copyable */
+code {
+    user-select: all;
+    cursor: pointer;
+}
+
+/* Better spacing for forms in details */
+details form {
+    margin-top: 1rem;
+}
+
+/* Compact buttons in tables */
+table button {
+    margin: 0;
+}
+
+/* Better styling for item lists */
+article ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+article ul li {
+    padding: 0.25rem 0;
+}
+
+/* Make details summary fully clickable */
+details summary {
+    cursor: pointer;
+    user-select: none;
+    list-style: none; /* Remove default arrow in some browsers */
+}
+
+/* Show custom arrow for better UX */
+details summary::before {
+    content: '▶ ';
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+/* Danger zone styling */
+details[open] summary {
+    margin-bottom: 1rem;
+}
+
+/* Success/Error messages */
+article[aria-label="Error"],
+article[aria-label="Success"] {
+    padding: 1rem;
+    margin-bottom: 1rem;
+}

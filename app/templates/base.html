@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Potluck Organizer{% endblock %}</title>
+
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="container">
+        <ul>
+            <li><strong><a href="/" style="text-decoration: none; color: inherit;">Potluck Organizer</a></strong></li>
+        </ul>
+        <ul>
+            {% if is_admin %}
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <li><a href="/admin/create">Create Potluck</a></li>
+            <li><a href="/admin/logout">Logout</a></li>
+            {% else %}
+            <li><a href="/">Home</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% if error %}
+        <article aria-label="Error" style="background-color: #ffebee; border-left: 4px solid #f44336;">
+            <p><strong>Error:</strong> {{ error }}</p>
+        </article>
+        {% endif %}
+
+        {% if success %}
+        <article aria-label="Success" style="background-color: #e8f5e9; border-left: 4px solid #4caf50;">
+            <p><strong>Success:</strong> {{ success }}</p>
+        </article>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container">
+        <small>
+            Potluck Organizer &copy; 2024 | Built with FastAPI & Pico CSS
+        </small>
+    </footer>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

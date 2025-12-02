@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ potluck.name }}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{{ potluck.name }}</h1>
+        {% if potluck.description %}
+        <p>{{ potluck.description }}</p>
+        {% endif %}
+    </header>
+
+    {% if categories_data %}
+        {% for cat_data in categories_data %}
+        <article>
+            <header>
+                <h2>
+                    {{ cat_data.category.name }}
+                    <span style="font-size: 0.9rem; color: #888;">
+                        ({{ cat_data.item_count }}/{{ cat_data.category.max_items }} items)
+                    </span>
+                </h2>
+                {% if cat_data.category.description %}
+                <p>{{ cat_data.category.description }}</p>
+                {% endif %}
+            </header>
+
+            <!-- Items in this category -->
+            {% if cat_data.items_list %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Who's Bringing It</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_data in cat_data.items_list %}
+                    <tr>
+                        <td>
+                            <strong>{{ item_data.item.name }}</strong>
+                            {% if item_data.item.description %}<br><small>{{ item_data.item.description }}</small>{% endif %}
+                            <br><small style="color: {% if item_data.can_claim %}green{% else %}red{% endif %};">
+                                {{ item_data.claim_count }}/{{ item_data.item.claim_limit }} claimed
+                            </small>
+                        </td>
+                        <td>
+                            {% if item_data.claims %}
+                            <ul style="margin: 0; padding-left: 1rem;">
+                                {% for claim in item_data.claims %}
+                                <li>
+                                    {{ claim.attendee_name }}
+                                    {% if claim.item_details %} - <em>{{ claim.item_details }}</em>{% endif %}
+                                    <form action="/p/{{ url_slug }}/claim/{{ claim.id }}/delete" method="post" style="display: inline;" onsubmit="return confirm('Remove your claim?');">
+                                        <button type="submit" style="padding: 0.1rem 0.3rem; font-size: 0.7rem;" class="secondary">Remove</button>
+                                    </form>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <em style="color: #888;">No one yet</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item_data.can_claim %}
+                            <details>
+                                <summary>Claim</summary>
+                                <form action="/p/{{ url_slug }}/claim/{{ item_data.item.id }}" method="post">
+                                    <label for="attendee_name_{{ item_data.item.id }}">
+                                        Your Name
+                                        <input type="text" id="attendee_name_{{ item_data.item.id }}" name="attendee_name" placeholder="Enter your name" required>
+                                    </label>
+
+                                    <label for="item_details_{{ item_data.item.id }}">
+                                        Details {% if item_data.item.require_details %}(required){% else %}(optional){% endif %}
+                                        <input type="text" id="item_details_{{ item_data.item.id }}" name="item_details" placeholder="e.g., BBQ flavor" {% if item_data.item.require_details %}required{% endif %}>
+                                    </label>
+
+                                    <button type="submit">Claim Item</button>
+                                </form>
+                            </details>
+                            {% else %}
+                            <small style="color: red;">Fully Claimed</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p><em>No items in this category yet.</em></p>
+            {% endif %}
+        </article>
+        {% endfor %}
+    {% else %}
+        <p><em>No categories yet. The admin will add them soon!</em></p>
+    {% endif %}
+</article>
+{% endblock %}

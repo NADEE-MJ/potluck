@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <p>
+            <a href="/admin/create" role="button">Create New Potluck</a>
+            <a href="/admin/logout" role="button" class="secondary">Logout</a>
+        </p>
+    </header>
+
+    {% if potlucks_data %}
+    <table>
+        <thead>
+            <tr>
+                <th>Potluck Name</th>
+                <th>Stats</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in potlucks_data %}
+            <tr>
+                <td>
+                    <strong>{{ data.potluck.name }}</strong>
+                    {% if data.potluck.description %}
+                    <br><small>{{ data.potluck.description }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <small>
+                        {{ data.total_categories }} categories<br>
+                        {{ data.total_items }} items<br>
+                        {{ data.total_claims }} claims
+                    </small>
+                </td>
+                <td>
+                    <small>{{ data.potluck.created_at.strftime('%Y-%m-%d') }}</small>
+                </td>
+                <td>
+                    <a href="/admin/edit/{{ data.potluck.url_slug }}" role="button" class="contrast">Edit</a>
+                    <a href="/p/{{ data.potluck.url_slug }}" role="button" class="secondary" target="_blank">View Public</a>
+                    <form action="/admin/delete/{{ data.potluck.url_slug }}" method="post" style="display: inline;" onsubmit="return confirm('Delete this potluck?');">
+                        <button type="submit" class="secondary" style="padding: 0.5rem 0.75rem; font-size: 0.875rem;">Delete</button>
+                    </form>
+                    <br><br>
+                    <small style="color: #888;">
+                        Public link: <code>/p/{{ data.potluck.url_slug }}</code>
+                        <button onclick="navigator.clipboard.writeText(window.location.origin + '/p/{{ data.potluck.url_slug }}')" style="padding: 0.1rem 0.3rem; font-size: 0.7rem;" class="contrast">Copy</button>
+                    </small>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p><em>No potlucks yet. <a href="/admin/create">Create your first potluck!</a></em></p>
+    {% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Potluck Organizer - Home{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>Welcome to Potluck Organizer</h1>
+    </header>
+
+    <p>
+        Organize your potlucks with ease! Create categories, add items, and let attendees claim what they'll bring.
+    </p>
+
+    {% if is_admin %}
+    <p>
+        <strong>You are logged in as admin.</strong>
+    </p>
+    <p>
+        <a href="/admin/create" role="button">Create New Potluck</a>
+    </p>
+    {% else %}
+    <hr>
+
+    <h2>Admin Login</h2>
+    <p>Log in to create and manage potlucks.</p>
+
+    <form action="/admin/login" method="post">
+        <label for="password">
+            Admin Password
+            <input type="password" id="password" name="password" placeholder="Enter admin password" required>
+        </label>
+
+        <button type="submit">Login as Admin</button>
+    </form>
+
+    <hr>
+
+    <h2>Attendee?</h2>
+    <p>
+        If you received a potluck link, simply visit that link to view the potluck and claim items!
+    </p>
+    <p>
+        <small>Example: <code>/p/abc123xy</code></small>
+    </p>
+    {% endif %}
+</article>
+{% endblock %}

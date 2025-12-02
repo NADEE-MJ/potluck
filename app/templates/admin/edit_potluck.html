@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ potluck.name }} - Admin{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>Edit Potluck: {{ potluck.name }}</h1>
+    </header>
+
+    <p><strong>Shareable Link:</strong> <code>{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ potluck.url_slug }}</code></p>
+
+    <details>
+        <summary>Update Potluck Details</summary>
+        <form action="/admin/edit/{{ potluck.url_slug }}" method="post">
+            <label for="potluck_name">
+                Potluck Name
+                <input type="text" id="potluck_name" name="potluck_name" value="{{ potluck.name }}" required>
+            </label>
+
+            <label for="potluck_description">
+                Description
+                <textarea id="potluck_description" name="potluck_description" rows="4">{{ potluck.description or '' }}</textarea>
+            </label>
+
+            <button type="submit">Update Details</button>
+        </form>
+    </details>
+
+    <hr>
+
+    <!-- Add Category Section -->
+    <details open>
+        <summary><strong>Add New Category</strong></summary>
+        <form action="/admin/edit/{{ potluck.url_slug }}/add-category" method="post">
+            <div class="grid">
+                <label for="category_name">
+                    Category Name
+                    <input type="text" id="category_name" name="category_name" placeholder="e.g., Appetizers" required>
+                </label>
+
+                <label for="max_items">
+                    Max Items
+                    <input type="number" id="max_items" name="max_items" value="10" min="1" max="100" required>
+                </label>
+            </div>
+
+            <label for="category_description">
+                Description (optional)
+                <input type="text" id="category_description" name="category_description" placeholder="e.g., Light starters">
+            </label>
+
+            <button type="submit">Add Category</button>
+        </form>
+    </details>
+
+    <hr>
+
+    <!-- Categories and Items -->
+    <h2>Categories & Items</h2>
+
+    {% if potluck.categories %}
+        {% for category in potluck.categories %}
+        <article>
+            <header>
+                <h3>{{ category.name }} ({{ category.items|length }}/{{ category.max_items }} items)</h3>
+                <p>{{ category.description or '' }}</p>
+                <details>
+                    <summary>Edit Category</summary>
+                    <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/update" method="post">
+                        <div class="grid">
+                            <label for="category_name_edit_{{ category.id }}">
+                                Category Name
+                                <input type="text" id="category_name_edit_{{ category.id }}" name="category_name" value="{{ category.name }}" required>
+                            </label>
+
+                            <label for="max_items_edit_{{ category.id }}">
+                                Max Items
+                                <input type="number" id="max_items_edit_{{ category.id }}" name="max_items" value="{{ category.max_items }}" min="1" max="100" required>
+                            </label>
+                        </div>
+
+                        <label for="category_description_edit_{{ category.id }}">
+                            Description
+                            <input type="text" id="category_description_edit_{{ category.id }}" name="category_description" value="{{ category.description or '' }}">
+                        </label>
+
+                        <button type="submit">Update Category</button>
+                    </form>
+                </details>
+            </header>
+
+            <!-- Items in this category -->
+            {% if category.items %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Claim Limit</th>
+                        <th>Claims</th>
+                        <th>Requires Details?</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in category.items %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.name }}</strong>
+                            {% if item.description %}<br><small>{{ item.description }}</small>{% endif %}
+                        </td>
+                        <td>{{ item.claim_limit }}</td>
+                        <td>
+                            {{ item.claims|length }}/{{ item.claim_limit }}
+                            {% if item.claims %}
+                            <details>
+                                <summary>View Claims</summary>
+                                <ul>
+                                    {% for claim in item.claims %}
+                                    <li>
+                                        {{ claim.attendee_name }}
+                                        {% if claim.item_details %} - {{ claim.item_details }}{% endif %}
+                                        <form action="/admin/edit/{{ potluck.url_slug }}/claim/{{ claim.id }}/delete" method="post" style="display: inline;">
+                                            <button type="submit" class="secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Remove</button>
+                                        </form>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                            {% endif %}
+                        </td>
+                        <td>{{ 'Yes' if item.require_details else 'No' }}</td>
+                        <td>
+                            <details>
+                                <summary>Edit</summary>
+                                <form action="/admin/edit/{{ potluck.url_slug }}/item/{{ item.id }}/update" method="post">
+                                    <div class="grid">
+                                        <label for="item_name_edit_{{ item.id }}">
+                                            Item Name
+                                            <input type="text" id="item_name_edit_{{ item.id }}" name="item_name" value="{{ item.name }}" required>
+                                        </label>
+
+                                        <label for="claim_limit_edit_{{ item.id }}">
+                                            Claim Limit
+                                            <input type="number" id="claim_limit_edit_{{ item.id }}" name="claim_limit" value="{{ item.claim_limit }}" min="1" max="100" required>
+                                        </label>
+                                    </div>
+
+                                    <label for="item_description_edit_{{ item.id }}">
+                                        Description
+                                        <input type="text" id="item_description_edit_{{ item.id }}" name="item_description" value="{{ item.description or '' }}">
+                                    </label>
+
+                                    <label>
+                                        <input type="checkbox" id="require_details_edit_{{ item.id }}" name="require_details" value="true" {% if item.require_details %}checked{% endif %}>
+                                        Require attendees to provide details when claiming
+                                    </label>
+
+                                    <button type="submit">Update Item</button>
+                                </form>
+                            </details>
+                            <form action="/admin/edit/{{ potluck.url_slug }}/item/{{ item.id }}/delete" method="post" style="display: inline;">
+                                <button type="submit" class="secondary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p><em>No items in this category yet.</em></p>
+            {% endif %}
+
+            <!-- Add Item Form -->
+            <details>
+                <summary>Add Item to {{ category.name }}</summary>
+                <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/add-item" method="post">
+                    <div class="grid">
+                        <label for="item_name_{{ category.id }}">
+                            Item Name
+                            <input type="text" id="item_name_{{ category.id }}" name="item_name" placeholder="e.g., Chips" required>
+                        </label>
+
+                        <label for="claim_limit_{{ category.id }}">
+                            Claim Limit
+                            <input type="number" id="claim_limit_{{ category.id }}" name="claim_limit" value="1" min="1" max="100" required>
+                        </label>
+                    </div>
+
+                    <label for="item_description_{{ category.id }}">
+                        Description (optional)
+                        <input type="text" id="item_description_{{ category.id }}" name="item_description" placeholder="e.g., Any flavor">
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="require_details_{{ category.id }}" name="require_details" value="true">
+                        Require attendees to provide details when claiming
+                    </label>
+
+                    <button type="submit">Add Item</button>
+                </form>
+            </details>
+
+            <footer>
+                <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/delete" method="post" onsubmit="return confirm('Delete this category and all its items?');">
+                    <button type="submit" class="contrast">Delete Category</button>
+                </form>
+            </footer>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p><em>No categories yet. Add one above to get started!</em></p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Delete Potluck -->
+    <details>
+        <summary style="color: #d32f2f;"><strong>Danger Zone</strong></summary>
+        <form action="/admin/delete/{{ potluck.url_slug }}" method="post" onsubmit="return confirm('Are you sure you want to delete this entire potluck? This cannot be undone!');">
+            <button type="submit" class="contrast">Delete Entire Potluck</button>
+        </form>
+    </details>
+</article>
+{% endblock %}
