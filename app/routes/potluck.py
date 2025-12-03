@@ -23,6 +23,13 @@ async def view_potluck(
     if not potluck:
         raise HTTPException(status_code=404, detail="Potluck not found")
 
+    # Get user's session ID (if they have one)
+    user_session_id = request.session.get("user_session_id")
+
+    # Get flash messages from session
+    error_message = request.session.pop("error", None)
+    success_message = request.session.pop("success", None)
+
     # Calculate statistics for each category and item
     categories_data = []
     for category in potluck.categories:
@@ -49,6 +56,9 @@ async def view_potluck(
             "potluck": potluck,
             "categories_data": categories_data,
             "url_slug": url_slug,
+            "user_session_id": user_session_id,
+            "error_message": error_message,
+            "success_message": success_message,
         },
     )
 
@@ -57,6 +67,7 @@ async def view_potluck(
 async def claim_item(
     url_slug: str,
     item_id: int,
+    request: Request,
     attendee_name: str = Form(...),
     item_details: str = Form(""),
     db: Session = Depends(get_db),
@@ -74,22 +85,26 @@ async def claim_item(
 
     # Check if item can be claimed
     if not crud.can_claim_item(db, item_id):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Item is fully claimed ({item.claim_limit}/{item.claim_limit})",
-        )
+        request.session["error"] = f"Sorry, '{item.name}' is already fully claimed ({item.claim_limit}/{item.claim_limit}). Please choose another item."
+        return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
 
     # Check if details are required but not provided
     if item.require_details and not item_details.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Please provide details about what you're bringing for this item",
-        )
+        request.session["error"] = f"Please provide details about what you're bringing for '{item.name}'."
+        return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
+
+    # Get or create session ID for this browser
+    if "user_session_id" not in request.session:
+        import secrets
+        request.session["user_session_id"] = secrets.token_urlsafe(32)
+
+    session_id = request.session["user_session_id"]
 
     # Create claim
     claim_data = ClaimCreate(attendee_name=attendee_name, item_details=item_details)
-    crud.create_claim(db, item, claim_data)
+    crud.create_claim(db, item, claim_data, session_id=session_id)
 
+    request.session["success"] = f"Successfully claimed '{item.name}'!"
     return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
 
 
@@ -97,10 +112,11 @@ async def claim_item(
 async def delete_claim_public(
     url_slug: str,
     claim_id: int,
+    request: Request,
     verify_name: str = Form(...),
     db: Session = Depends(get_db),
 ):
-    """Remove a claim (public) - requires name verification."""
+    """Remove a claim (public) - requires session verification."""
     # Verify potluck exists
     potluck = crud.get_potluck_by_slug(db, url_slug)
     if not potluck:
@@ -111,14 +127,19 @@ async def delete_claim_public(
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
-    # Verify the name matches (case-insensitive)
+    # Verify the session ID matches
+    user_session_id = request.session.get("user_session_id")
+    if not user_session_id or claim.session_id != user_session_id:
+        request.session["error"] = "You can only remove your own claims."
+        return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
+
+    # Additional name verification for extra security
     if claim.attendee_name.strip().lower() != verify_name.strip().lower():
-        raise HTTPException(
-            status_code=403,
-            detail="Name doesn't match. You can only remove your own claims."
-        )
+        request.session["error"] = "Name doesn't match. Please enter the exact name you used when claiming."
+        return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
 
     # Delete claim
     crud.delete_claim(db, claim)
 
+    request.session["success"] = "Claim removed successfully!"
     return RedirectResponse(url=f"/p/{url_slug}", status_code=303)

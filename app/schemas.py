@@ -24,7 +24,6 @@ class CategoryCreate(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
-    max_items: int = Field(default=10, ge=1, le=100)
     display_order: int = Field(default=0, ge=0)
 
 
@@ -33,7 +32,6 @@ class CategoryUpdate(BaseModel):
 
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = None
-    max_items: Optional[int] = Field(None, ge=1, le=100)
     display_order: Optional[int] = Field(None, ge=0)
 
 

@@ -76,7 +76,6 @@ def create_category(
         potluck_id=potluck.id,
         name=category_data.name,
         description=category_data.description,
-        max_items=category_data.max_items,
         display_order=category_data.display_order,
     )
     db.add(category)
@@ -98,8 +97,6 @@ def update_category(
         category.name = category_data.name
     if category_data.description is not None:
         category.description = category_data.description
-    if category_data.max_items is not None:
-        category.max_items = category_data.max_items
     if category_data.display_order is not None:
         category.display_order = category_data.display_order
     db.commit()
@@ -113,14 +110,6 @@ def delete_category(db: Session, category: Category) -> None:
     db.commit()
 
 
-def can_add_item_to_category(db: Session, category_id: int) -> bool:
-    """Check if a category has space for more items."""
-    category = get_category(db, category_id)
-    if not category:
-        return False
-
-    current_item_count = db.query(Item).filter(Item.category_id == category_id).count()
-    return current_item_count < category.max_items
 
 
 # Item CRUD
@@ -182,12 +171,13 @@ def can_claim_item(db: Session, item_id: int) -> bool:
 
 
 # Claim CRUD
-def create_claim(db: Session, item: Item, claim_data: ClaimCreate) -> Claim:
+def create_claim(db: Session, item: Item, claim_data: ClaimCreate, session_id: Optional[str] = None) -> Claim:
     """Create a new claim for an item."""
     claim = Claim(
         item_id=item.id,
         attendee_name=claim_data.attendee_name,
         item_details=claim_data.item_details,
+        session_id=session_id,
     )
     db.add(claim)
     db.commit()

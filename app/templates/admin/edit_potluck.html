@@ -58,18 +58,10 @@
         <strong>Add New Category</strong>
     </summary>
     <form action="/admin/edit/{{ potluck.url_slug }}/add-category" method="post">
-        <div class="grid grid-2">
-            <label for="category_name">
-                Category Name
-                <input type="text" id="category_name" name="category_name" placeholder="e.g., Appetizers, Drinks, Desserts" required>
-            </label>
-
-            <label for="max_items">
-                Max Items
-                <input type="number" id="max_items" name="max_items" value="10" min="1" max="100" required>
-                <small>Maximum number of items in this category</small>
-            </label>
-        </div>
+        <label for="category_name">
+            Category Name
+            <input type="text" id="category_name" name="category_name" placeholder="e.g., Appetizers, Drinks, Desserts" required>
+        </label>
 
         <label for="category_description">
             Description <span class="text-muted">(optional)</span>
@@ -104,7 +96,7 @@
                     {% endif %}
                     <div class="badge mt-sm">
                         <i data-lucide="package"></i>
-                        {{ category.items|length }}/{{ category.max_items }} items
+                        {{ category.items|length }} items
                     </div>
                 </div>
             </div>
@@ -117,17 +109,10 @@
                         Edit Category
                     </summary>
                     <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/update" method="post">
-                        <div class="grid grid-2">
-                            <label for="category_name_edit_{{ category.id }}">
-                                Category Name
-                                <input type="text" id="category_name_edit_{{ category.id }}" name="category_name" value="{{ category.name }}" required>
-                            </label>
-
-                            <label for="max_items_edit_{{ category.id }}">
-                                Max Items
-                                <input type="number" id="max_items_edit_{{ category.id }}" name="max_items" value="{{ category.max_items }}" min="1" max="100" required>
-                            </label>
-                        </div>
+                        <label for="category_name_edit_{{ category.id }}">
+                            Category Name
+                            <input type="text" id="category_name_edit_{{ category.id }}" name="category_name" value="{{ category.name }}" required>
+                        </label>
 
                         <label for="category_description_edit_{{ category.id }}">
                             Description

@@ -3,6 +3,24 @@
 {% block title %}{{ potluck.name }}{% endblock %}
 
 {% block content %}
+{% if error_message %}
+<div class="card" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: rgb(239, 68, 68);"></i>
+        <span style="color: rgb(239, 68, 68);">{{ error_message }}</span>
+    </div>
+</div>
+{% endif %}
+
+{% if success_message %}
+<div class="card" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i data-lucide="check-circle" style="width: 20px; height: 20px; color: rgb(34, 197, 94);"></i>
+        <span style="color: rgb(34, 197, 94);">{{ success_message }}</span>
+    </div>
+</div>
+{% endif %}
+
 <div class="card">
     <div class="card-header">
         <div>
@@ -28,7 +46,7 @@
                 {% endif %}
                 <div class="badge mt-sm">
                     <i data-lucide="package"></i>
-                    {{ cat_data.item_count }}/{{ cat_data.category.max_items }} items
+                    {{ cat_data.item_count }} items
                 </div>
             </div>
         </div>
@@ -96,10 +114,13 @@
                                         <br><small class="text-muted">{{ claim.item_details }}</small>
                                         {% endif %}
                                     </div>
-                                    <button type="button" class="secondary btn-sm" onclick="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    {% if user_session_id and claim.session_id == user_session_id %}
+                                    <button type="button" class="secondary btn-sm" onclick="this.style.display='none'; this.parentElement.nextElementSibling.style.display='block';">
                                         <i data-lucide="x"></i>
                                     </button>
+                                    {% endif %}
                                 </div>
+                                {% if user_session_id and claim.session_id == user_session_id %}
                                 <div style="display: none; width: 100%; margin-top: 0.5rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-sm);">
                                     <form action="/p/{{ url_slug }}/claim/{{ claim.id }}/delete" method="post">
                                         <label for="verify_name_{{ claim.id }}" style="margin-bottom: 0.5rem;">
@@ -111,12 +132,13 @@
                                             <button type="submit" class="contrast btn-sm">
                                                 <i data-lucide="trash-2"></i> Confirm Remove
                                             </button>
-                                            <button type="button" class="secondary btn-sm" onclick="this.closest('div').parentElement.style.display='none'; this.closest('div').parentElement.previousElementSibling.querySelector('button').style.display='inline-flex';">
+                                            <button type="button" class="secondary btn-sm" onclick="var formDiv = this.closest('div').parentElement.parentElement; formDiv.style.display='none'; formDiv.previousElementSibling.querySelector('button').style.display='inline-flex';">
                                                 Cancel
                                             </button>
                                         </div>
                                     </form>
                                 </div>
+                                {% endif %}
                             </li>
                             {% endfor %}
                         </ul>

@@ -156,7 +156,6 @@ async def add_category(
     url_slug: str,
     category_name: str = Form(...),
     category_description: str = Form(""),
-    max_items: int = Form(10),
     db: Session = Depends(get_db),
     _: None = Depends(require_admin),
 ):
@@ -166,7 +165,7 @@ async def add_category(
         raise HTTPException(status_code=404, detail="Potluck not found")
 
     category_data = CategoryCreate(
-        name=category_name, description=category_description, max_items=max_items
+        name=category_name, description=category_description
     )
     crud.create_category(db, potluck, category_data)
 
@@ -179,7 +178,6 @@ async def update_category(
     category_id: int,
     category_name: str = Form(...),
     category_description: str = Form(""),
-    max_items: int = Form(...),
     db: Session = Depends(get_db),
     _: None = Depends(require_admin),
 ):
@@ -189,7 +187,7 @@ async def update_category(
         raise HTTPException(status_code=404, detail="Category not found")
 
     category_data = CategoryUpdate(
-        name=category_name, description=category_description, max_items=max_items
+        name=category_name, description=category_description
     )
     crud.update_category(db, category, category_data)
 

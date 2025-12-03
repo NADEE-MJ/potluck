@@ -32,7 +32,6 @@ class Category(Base):
     potluck_id = Column(Integer, ForeignKey("potlucks.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
-    max_items = Column(Integer, nullable=False, default=10)
     display_order = Column(Integer, default=0)
 
     # Relationships
@@ -68,6 +67,7 @@ class Claim(Base):
     item_id = Column(Integer, ForeignKey("items.id", ondelete="CASCADE"), nullable=False)
     attendee_name = Column(String(200), nullable=False)
     item_details = Column(Text, nullable=True)
+    session_id = Column(String(255), nullable=True)  # Session ID to track who created the claim
     claimed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
