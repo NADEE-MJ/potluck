@@ -219,6 +219,42 @@ async def delete_category(
     return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
 
 
+@router.post("/edit/{url_slug}/category/{category_id}/move-up")
+async def move_category_up(
+    url_slug: str,
+    category_id: int,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Move a category up one slot."""
+    potluck = get_potluck_or_404(db, url_slug)
+    category = crud.get_category_for_potluck(db, potluck.id, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    crud.move_category(db, category, "up")
+
+    return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
+
+
+@router.post("/edit/{url_slug}/category/{category_id}/move-down")
+async def move_category_down(
+    url_slug: str,
+    category_id: int,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Move a category down one slot."""
+    potluck = get_potluck_or_404(db, url_slug)
+    category = crud.get_category_for_potluck(db, potluck.id, category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    crud.move_category(db, category, "down")
+
+    return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
+
+
 # Item Management
 @router.post("/edit/{url_slug}/category/{category_id}/add-item")
 async def add_item(
@@ -296,6 +332,42 @@ async def delete_item(
         raise HTTPException(status_code=404, detail="Item not found")
 
     crud.delete_item(db, item)
+
+    return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
+
+
+@router.post("/edit/{url_slug}/item/{item_id}/move-up")
+async def move_item_up(
+    url_slug: str,
+    item_id: int,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Move an item up one slot within its category."""
+    potluck = get_potluck_or_404(db, url_slug)
+    item = crud.get_item_for_potluck(db, potluck.id, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    crud.move_item(db, item, "up")
+
+    return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
+
+
+@router.post("/edit/{url_slug}/item/{item_id}/move-down")
+async def move_item_down(
+    url_slug: str,
+    item_id: int,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Move an item down one slot within its category."""
+    potluck = get_potluck_or_404(db, url_slug)
+    item = crud.get_item_for_potluck(db, potluck.id, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    crud.move_item(db, item, "down")
 
     return RedirectResponse(url=f"/admin/edit/{url_slug}", status_code=303)
 

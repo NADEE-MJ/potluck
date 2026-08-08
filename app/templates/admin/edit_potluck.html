@@ -86,17 +86,32 @@
         <div class="card">
             <!-- Category Header -->
             <div class="card-header">
-                <div>
-                    <h3 class="card-title">
-                        <i data-lucide="folder"></i>
-                        {{ category.name }}
-                    </h3>
-                    {% if category.description %}
-                    <p class="card-description">{{ category.description }}</p>
-                    {% endif %}
-                    <div class="badge mt-sm">
-                        <i data-lucide="package"></i>
-                        {{ category.items|length }} items
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="card-title">
+                            <i data-lucide="folder"></i>
+                            {{ category.name }}
+                        </h3>
+                        {% if category.description %}
+                        <p class="card-description">{{ category.description }}</p>
+                        {% endif %}
+                        <div class="badge mt-sm">
+                            <i data-lucide="package"></i>
+                            {{ category.items|length }} items
+                        </div>
+                    </div>
+                    <!-- Reorder Category -->
+                    <div class="btn-group">
+                        <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/move-up" method="post">
+                            <button type="submit" class="secondary btn-sm btn-icon-only" title="Move up" {% if loop.first %}disabled{% endif %}>
+                                <i data-lucide="chevron-up"></i>
+                            </button>
+                        </form>
+                        <form action="/admin/edit/{{ potluck.url_slug }}/category/{{ category.id }}/move-down" method="post">
+                            <button type="submit" class="secondary btn-sm btn-icon-only" title="Move down" {% if loop.last %}disabled{% endif %}>
+                                <i data-lucide="chevron-down"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -136,7 +151,22 @@
                         <!-- Item Info -->
                         <div style="margin-bottom: 1rem;">
                             <div class="flex justify-between items-center">
-                                <h5 style="margin: 0; font-size: 1.05rem;">{{ item.name }}</h5>
+                                <div class="flex items-center gap-sm">
+                                    <!-- Reorder Item -->
+                                    <div class="btn-group">
+                                        <form action="/admin/edit/{{ potluck.url_slug }}/item/{{ item.id }}/move-up" method="post">
+                                            <button type="submit" class="secondary btn-sm btn-icon-only" title="Move up" {% if loop.first %}disabled{% endif %}>
+                                                <i data-lucide="chevron-up"></i>
+                                            </button>
+                                        </form>
+                                        <form action="/admin/edit/{{ potluck.url_slug }}/item/{{ item.id }}/move-down" method="post">
+                                            <button type="submit" class="secondary btn-sm btn-icon-only" title="Move down" {% if loop.last %}disabled{% endif %}>
+                                                <i data-lucide="chevron-down"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <h5 style="margin: 0; font-size: 1.05rem;">{{ item.name }}</h5>
+                                </div>
                                 <div class="flex gap-sm">
                                     {% if item.require_details %}
                                     <span class="badge badge-warning">

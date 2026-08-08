@@ -71,12 +71,20 @@ def delete_potluck(db: Session, potluck: Potluck) -> None:
 def create_category(
     db: Session, potluck: Potluck, category_data: CategoryCreate
 ) -> Category:
-    """Create a new category for a potluck."""
+    """Create a new category for a potluck, appended to the end of the order."""
+    max_order = (
+        db.query(Category.display_order)
+        .filter(Category.potluck_id == potluck.id)
+        .order_by(Category.display_order.desc())
+        .first()
+    )
+    next_order = (max_order[0] + 1) if max_order else 0
+
     category = Category(
         potluck_id=potluck.id,
         name=category_data.name,
         description=category_data.description,
-        display_order=category_data.display_order,
+        display_order=next_order,
     )
     db.add(category)
     db.commit()
@@ -125,6 +133,30 @@ def delete_category(db: Session, category: Category) -> None:
     db.commit()
 
 
+def move_category(db: Session, category: Category, direction: str) -> None:
+    """Move a category up or down one slot by swapping display_order with
+    its nearest sibling in that direction. No-op at either end of the list.
+    """
+    comparator = Category.display_order < category.display_order
+    order_by = Category.display_order.desc()
+    if direction == "down":
+        comparator = Category.display_order > category.display_order
+        order_by = Category.display_order.asc()
+
+    neighbor = (
+        db.query(Category)
+        .filter(Category.potluck_id == category.potluck_id, comparator)
+        .order_by(order_by)
+        .first()
+    )
+    if neighbor is None:
+        return
+
+    category.display_order, neighbor.display_order = (
+        neighbor.display_order,
+        category.display_order,
+    )
+    db.commit()
 
 
 # Item CRUD
@@ -134,7 +166,15 @@ def create_item(
     item_data: ItemCreate,
     created_by_admin: bool = True,
 ) -> Item:
-    """Create a new item in a category."""
+    """Create a new item in a category, appended to the end of the order."""
+    max_order = (
+        db.query(Item.display_order)
+        .filter(Item.category_id == category.id)
+        .order_by(Item.display_order.desc())
+        .first()
+    )
+    next_order = (max_order[0] + 1) if max_order else 0
+
     item = Item(
         category_id=category.id,
         name=item_data.name,
@@ -142,6 +182,7 @@ def create_item(
         claim_limit=item_data.claim_limit,
         created_by_admin=created_by_admin,
         require_details=item_data.require_details,
+        display_order=next_order,
     )
     db.add(item)
     db.commit()
@@ -186,6 +227,34 @@ def update_item(db: Session, item: Item, item_data: ItemUpdate) -> Item:
 def delete_item(db: Session, item: Item) -> None:
     """Delete an item (cascades to claims)."""
     db.delete(item)
+    db.commit()
+
+
+def move_item(db: Session, item: Item, direction: str) -> None:
+    """Move an item up or down one slot within its category by swapping
+    display_order with its nearest sibling in that direction. Items never
+    move between categories this way - use the edit form for that.
+    No-op at either end of the list.
+    """
+    comparator = Item.display_order < item.display_order
+    order_by = Item.display_order.desc()
+    if direction == "down":
+        comparator = Item.display_order > item.display_order
+        order_by = Item.display_order.asc()
+
+    neighbor = (
+        db.query(Item)
+        .filter(Item.category_id == item.category_id, comparator)
+        .order_by(order_by)
+        .first()
+    )
+    if neighbor is None:
+        return
+
+    item.display_order, neighbor.display_order = (
+        neighbor.display_order,
+        item.display_order,
+    )
     db.commit()
 
 

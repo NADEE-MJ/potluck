@@ -20,7 +20,12 @@ class Potluck(Base):
     )
 
     # Relationships
-    categories = relationship("Category", back_populates="potluck", cascade="all, delete-orphan")
+    categories = relationship(
+        "Category",
+        back_populates="potluck",
+        cascade="all, delete-orphan",
+        order_by="Category.display_order",
+    )
 
 
 class Category(Base):
@@ -36,7 +41,12 @@ class Category(Base):
 
     # Relationships
     potluck = relationship("Potluck", back_populates="categories")
-    items = relationship("Item", back_populates="category", cascade="all, delete-orphan")
+    items = relationship(
+        "Item",
+        back_populates="category",
+        cascade="all, delete-orphan",
+        order_by="Item.display_order",
+    )
 
 
 class Item(Base):
@@ -51,6 +61,7 @@ class Item(Base):
     claim_limit = Column(Integer, nullable=False, default=1)
     created_by_admin = Column(Boolean, default=True)
     require_details = Column(Boolean, default=False)
+    display_order = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
