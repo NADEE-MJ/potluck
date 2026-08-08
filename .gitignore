@@ -54,3 +54,8 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# playwright-cli scratch output
+.playwright-cli/
+*.yml
+!docker-compose.yml

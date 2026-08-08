@@ -89,6 +89,21 @@ def get_category(db: Session, category_id: int) -> Optional[Category]:
     return db.query(Category).filter(Category.id == category_id).first()
 
 
+def get_category_for_potluck(
+    db: Session, potluck_id: int, category_id: int
+) -> Optional[Category]:
+    """Get a category by ID, scoped to a specific potluck.
+
+    Returns None if the category doesn't exist or belongs to a different
+    potluck, so callers can't reach across potlucks via a raw ID.
+    """
+    return (
+        db.query(Category)
+        .filter(Category.id == category_id, Category.potluck_id == potluck_id)
+        .first()
+    )
+
+
 def update_category(
     db: Session, category: Category, category_data: CategoryUpdate
 ) -> Category:
@@ -139,6 +154,20 @@ def get_item(db: Session, item_id: int) -> Optional[Item]:
     return db.query(Item).filter(Item.id == item_id).first()
 
 
+def get_item_for_potluck(db: Session, potluck_id: int, item_id: int) -> Optional[Item]:
+    """Get an item by ID, scoped to a specific potluck.
+
+    Returns None if the item doesn't exist or belongs to a different
+    potluck, so callers can't reach across potlucks via a raw ID.
+    """
+    return (
+        db.query(Item)
+        .join(Category, Item.category_id == Category.id)
+        .filter(Item.id == item_id, Category.potluck_id == potluck_id)
+        .first()
+    )
+
+
 def update_item(db: Session, item: Item, item_data: ItemUpdate) -> Item:
     """Update an item."""
     if item_data.name is not None:
@@ -171,8 +200,18 @@ def can_claim_item(db: Session, item_id: int) -> bool:
 
 
 # Claim CRUD
-def create_claim(db: Session, item: Item, claim_data: ClaimCreate, session_id: Optional[str] = None) -> Claim:
-    """Create a new claim for an item."""
+def create_claim(
+    db: Session, item: Item, claim_data: ClaimCreate, session_id: Optional[str] = None
+) -> Optional[Claim]:
+    """Create a new claim for an item, enforcing claim_limit atomically.
+
+    The capacity check happens *after* the insert but before commit, inside
+    the same transaction. SQLite takes a write lock on the first INSERT in a
+    transaction, so a concurrent call blocks here until this one commits or
+    rolls back - the count it sees is always accurate, unlike a separate
+    can_claim_item() check done before the insert. Returns None if the item
+    was already at capacity (caller should treat that as "sorry, full").
+    """
     claim = Claim(
         item_id=item.id,
         attendee_name=claim_data.attendee_name,
@@ -180,6 +219,13 @@ def create_claim(db: Session, item: Item, claim_data: ClaimCreate, session_id: O
         session_id=session_id,
     )
     db.add(claim)
+    db.flush()
+
+    current_claims = db.query(Claim).filter(Claim.item_id == item.id).count()
+    if current_claims > item.claim_limit:
+        db.rollback()
+        return None
+
     db.commit()
     db.refresh(claim)
     return claim
@@ -188,6 +234,21 @@ def create_claim(db: Session, item: Item, claim_data: ClaimCreate, session_id: O
 def get_claim(db: Session, claim_id: int) -> Optional[Claim]:
     """Get a claim by ID."""
     return db.query(Claim).filter(Claim.id == claim_id).first()
+
+
+def get_claim_for_potluck(db: Session, potluck_id: int, claim_id: int) -> Optional[Claim]:
+    """Get a claim by ID, scoped to a specific potluck.
+
+    Returns None if the claim doesn't exist or belongs to an item in a
+    different potluck, so callers can't reach across potlucks via a raw ID.
+    """
+    return (
+        db.query(Claim)
+        .join(Item, Claim.item_id == Item.id)
+        .join(Category, Item.category_id == Category.id)
+        .filter(Claim.id == claim_id, Category.potluck_id == potluck_id)
+        .first()
+    )
 
 
 def update_claim(db: Session, claim: Claim, claim_data: ClaimUpdate) -> Claim:

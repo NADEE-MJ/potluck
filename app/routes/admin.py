@@ -1,4 +1,6 @@
 """Admin routes for potluck management."""
+import hmac
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -19,12 +21,22 @@ def require_admin(request: Request):
         raise HTTPException(status_code=403, detail="Admin access required")
 
 
+def get_potluck_or_404(db: Session, url_slug: str):
+    """Look up a potluck by slug or raise 404. Shared by every admin route
+    below so category/item/claim lookups can be scoped to it, preventing a
+    tampered ID from reaching across into a different potluck."""
+    potluck = crud.get_potluck_by_slug(db, url_slug)
+    if not potluck:
+        raise HTTPException(status_code=404, detail="Potluck not found")
+    return potluck
+
+
 # Admin Login/Logout
 @router.post("/login")
 async def admin_login(request: Request, password: str = Form(...)):
     """Verify admin password and set session."""
-    # Simple password comparison (consider using bcrypt hash in production)
-    if password == settings.admin_password:
+    # Constant-time comparison to avoid leaking the password via timing.
+    if hmac.compare_digest(password, settings.admin_password):
         # Password matches
         request.session["is_admin"] = True
         return RedirectResponse(url="/admin/dashboard", status_code=303)
@@ -117,9 +129,7 @@ async def show_edit_potluck(
     _: None = Depends(require_admin),
 ):
     """Show edit potluck page."""
-    potluck = crud.get_potluck_by_slug(db, url_slug)
-    if not potluck:
-        raise HTTPException(status_code=404, detail="Potluck not found")
+    potluck = get_potluck_or_404(db, url_slug)
 
     return templates.TemplateResponse(
         "admin/edit_potluck.html",
@@ -140,9 +150,7 @@ async def update_potluck(
     """Update potluck details."""
     from app.schemas import PotluckUpdate
 
-    potluck = crud.get_potluck_by_slug(db, url_slug)
-    if not potluck:
-        raise HTTPException(status_code=404, detail="Potluck not found")
+    potluck = get_potluck_or_404(db, url_slug)
 
     potluck_data = PotluckUpdate(name=potluck_name, description=potluck_description)
     crud.update_potluck(db, potluck, potluck_data)
@@ -160,9 +168,7 @@ async def add_category(
     _: None = Depends(require_admin),
 ):
     """Add a category to a potluck."""
-    potluck = crud.get_potluck_by_slug(db, url_slug)
-    if not potluck:
-        raise HTTPException(status_code=404, detail="Potluck not found")
+    potluck = get_potluck_or_404(db, url_slug)
 
     category_data = CategoryCreate(
         name=category_name, description=category_description
@@ -182,7 +188,8 @@ async def update_category(
     _: None = Depends(require_admin),
 ):
     """Update a category."""
-    category = crud.get_category(db, category_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    category = crud.get_category_for_potluck(db, potluck.id, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
@@ -202,7 +209,8 @@ async def delete_category(
     _: None = Depends(require_admin),
 ):
     """Delete a category."""
-    category = crud.get_category(db, category_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    category = crud.get_category_for_potluck(db, potluck.id, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
@@ -224,7 +232,8 @@ async def add_item(
     _: None = Depends(require_admin),
 ):
     """Add an item to a category."""
-    category = crud.get_category(db, category_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    category = crud.get_category_for_potluck(db, potluck.id, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
@@ -254,7 +263,8 @@ async def update_item(
     _: None = Depends(require_admin),
 ):
     """Update an item."""
-    item = crud.get_item(db, item_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    item = crud.get_item_for_potluck(db, potluck.id, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -280,7 +290,8 @@ async def delete_item(
     _: None = Depends(require_admin),
 ):
     """Delete an item."""
-    item = crud.get_item(db, item_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    item = crud.get_item_for_potluck(db, potluck.id, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -300,7 +311,8 @@ async def update_claim_admin(
     _: None = Depends(require_admin),
 ):
     """Update a claim (admin only)."""
-    claim = crud.get_claim(db, claim_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    claim = crud.get_claim_for_potluck(db, potluck.id, claim_id)
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
@@ -318,7 +330,8 @@ async def delete_claim_admin(
     _: None = Depends(require_admin),
 ):
     """Delete a claim (admin only)."""
-    claim = crud.get_claim(db, claim_id)
+    potluck = get_potluck_or_404(db, url_slug)
+    claim = crud.get_claim_for_potluck(db, potluck.id, claim_id)
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
@@ -335,9 +348,7 @@ async def delete_potluck(
     _: None = Depends(require_admin),
 ):
     """Delete an entire potluck."""
-    potluck = crud.get_potluck_by_slug(db, url_slug)
-    if not potluck:
-        raise HTTPException(status_code=404, detail="Potluck not found")
+    potluck = get_potluck_or_404(db, url_slug)
 
     crud.delete_potluck(db, potluck)
 

@@ -78,8 +78,9 @@ async def claim_item(
     if not potluck:
         raise HTTPException(status_code=404, detail="Potluck not found")
 
-    # Get item
-    item = crud.get_item(db, item_id)
+    # Get item, scoped to this potluck so a link to one potluck can't be
+    # used to claim/enumerate items belonging to another.
+    item = crud.get_item_for_potluck(db, potluck.id, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -100,9 +101,14 @@ async def claim_item(
 
     session_id = request.session["user_session_id"]
 
-    # Create claim
+    # Create claim (create_claim re-checks capacity atomically and returns
+    # None if the item filled up between the check above and now).
     claim_data = ClaimCreate(attendee_name=attendee_name, item_details=item_details)
-    crud.create_claim(db, item, claim_data, session_id=session_id)
+    claim = crud.create_claim(db, item, claim_data, session_id=session_id)
+
+    if claim is None:
+        request.session["error"] = f"Sorry, '{item.name}' just got fully claimed by someone else. Please choose another item."
+        return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
 
     request.session["success"] = f"Successfully claimed '{item.name}'!"
     return RedirectResponse(url=f"/p/{url_slug}", status_code=303)
@@ -122,8 +128,9 @@ async def delete_claim_public(
     if not potluck:
         raise HTTPException(status_code=404, detail="Potluck not found")
 
-    # Get claim
-    claim = crud.get_claim(db, claim_id)
+    # Get claim, scoped to this potluck so a link to one potluck can't be
+    # used to enumerate/delete claims belonging to another.
+    claim = crud.get_claim_for_potluck(db, potluck.id, claim_id)
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
