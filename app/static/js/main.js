@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     codeElements.forEach(function(codeElement) {
         codeElement.addEventListener('click', function() {
-            const text = this.textContent;
+            // Use data-copy when the displayed text is a shortened version
+            // of the real value (e.g. a relative path shown, full URL copied).
+            const text = this.dataset.copy || this.textContent;
 
             // Copy to clipboard
             navigator.clipboard.writeText(text).then(function() {

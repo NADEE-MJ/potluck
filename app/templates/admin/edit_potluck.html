@@ -23,7 +23,7 @@
     </div>
     <div class="card-body">
         <p class="text-muted" style="margin-bottom: 0.5rem; font-size: 0.9rem;">Share this link with attendees:</p>
-        <code onclick="navigator.clipboard.writeText('{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ potluck.url_slug }}'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = '{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ potluck.url_slug }}', 2000);">{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ potluck.url_slug }}</code>
+        <code>{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ potluck.url_slug }}</code>
     </div>
 </div>
 

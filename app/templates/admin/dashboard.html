@@ -62,7 +62,7 @@
                     </div>
                     <br>
                     <small class="text-muted" style="font-size: 0.75rem;">
-                        <code onclick="navigator.clipboard.writeText(window.location.origin + '/p/{{ data.potluck.url_slug }}'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = '/p/{{ data.potluck.url_slug }}', 2000);" style="cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem;">/p/{{ data.potluck.url_slug }}</code>
+                        <code data-copy="{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ data.potluck.url_slug }}" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">/p/{{ data.potluck.url_slug }}</code>
                     </small>
                 </td>
             </tr>
@@ -121,7 +121,7 @@
                 </div>
                 <div>
                     <small class="text-muted" style="display: block; margin-bottom: 0.5rem;">Shareable Link:</small>
-                    <code onclick="navigator.clipboard.writeText(window.location.origin + '/p/{{ data.potluck.url_slug }}'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = window.location.origin + '/p/{{ data.potluck.url_slug }}', 2000);">{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ data.potluck.url_slug }}</code>
+                    <code>{{ request.url.scheme }}://{{ request.url.netloc }}/p/{{ data.potluck.url_slug }}</code>
                 </div>
             </div>
         </div>
