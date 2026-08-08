@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nadeem.potluck</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>cd /opt/projects/potluck &amp;&amp; uv sync --no-dev &amp;&amp; exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8003</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/opt/projects/potluck</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/nadeem/Library/Logs/potluck.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/nadeem/Library/Logs/potluck.error.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/nadeem/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>
