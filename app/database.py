@@ -52,11 +52,66 @@ def run_migrations():
                 print(f"Migration: added column {table}.{column}")
 
 
+def _backfill_uniform_display_order(connection, table, group_column):
+    """Give each row in `table` a distinct display_order (by id, within its
+    group_column) whenever its whole sibling group currently shares one
+    identical value.
+
+    Categories/items created before display_order was wired up (or added
+    by this migration with a DEFAULT) all land on the same value, which
+    breaks move-up/move-down: it compares by strict </> so a group tied at
+    the same number has no "next" sibling to swap with. Renumbering only
+    when a group is *uniform* makes this safe to run on every startup: the
+    first move on a group differentiates its values, so later runs leave
+    it alone instead of clobbering someone's chosen order.
+    """
+    groups = connection.execute(
+        text(f"SELECT DISTINCT {group_column} FROM {table}")
+    ).fetchall()
+
+    for (group_id,) in groups:
+        rows = connection.execute(
+            text(
+                f"SELECT id, display_order FROM {table} "
+                f"WHERE {group_column} = :group_id ORDER BY id"
+            ),
+            {"group_id": group_id},
+        ).fetchall()
+
+        if len(rows) < 2:
+            continue
+        distinct_orders = {row[1] for row in rows}
+        if len(distinct_orders) > 1:
+            continue  # already differentiated - leave it alone
+
+        for position, (row_id, _) in enumerate(rows):
+            connection.execute(
+                text(f"UPDATE {table} SET display_order = :order WHERE id = :id"),
+                {"order": position, "id": row_id},
+            )
+
+
+def backfill_display_order():
+    """Renumber categories/items whose sibling group is still uniformly
+    ordered, so move-up/move-down has something to swap with. See
+    _backfill_uniform_display_order for why this is safe to call every
+    startup."""
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+
+    with engine.begin() as connection:
+        if "categories" in existing_tables:
+            _backfill_uniform_display_order(connection, "categories", "potluck_id")
+        if "items" in existing_tables:
+            _backfill_uniform_display_order(connection, "items", "category_id")
+
+
 def init_db():
     """Initialize database tables."""
     from app import models  # Import models to register them
     run_migrations()
     Base.metadata.create_all(bind=engine)
+    backfill_display_order()
 
 
 def get_db():
